@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from 'react';
-import logo from './logo.svg';
 import './App.css';
 import QRCode from 'qrcode';
 
@@ -7,14 +6,7 @@ function App() {
   const myRef = React.createRef();
   const urlSearchParams = new URLSearchParams(window.location.search);
 
-  // // Similar to componentDidMount and componentDidUpdate:
-  // useEffect(() => {
-  //   // Update the document title using the browser API
-  //   //document.title = `You clicked ${data} times`;
-  // });
-
   const param = urlSearchParams.get('data');
-  const defaultData = param && decodeURI(param) || 'https://example.com';
   const [data, setData] = useState(param && decodeURI(param));
   useEffect(() => {
 
@@ -25,7 +17,6 @@ function App() {
 
         QRCode.toCanvas(canvas, data, { scale: 9 }, function (error) {
           if (error) console.error(error)
-          console.log('success!');
         })
 
       }
