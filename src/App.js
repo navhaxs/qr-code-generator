@@ -7,32 +7,47 @@ function App() {
   const urlSearchParams = new URLSearchParams(window.location.search);
 
   const param = urlSearchParams.get('data');
-  const [data, setData] = useState(param && decodeURI(param));
+  const [isValid, setIsValid] = useState();
+  const [errorMessage, setErrorMessage] = useState();
+  const [data, setData] = useState(param ? decodeURI(param) : '');
   useEffect(() => {
+
+    setIsValid(data != '');
 
     const canvas = myRef && myRef.current;
     if (canvas) {
 
-      if (data) {
+      if (data != '') {
+
+        canvas.style.display = null;
+        setErrorMessage(null);
 
         QRCode.toCanvas(canvas, data, { scale: 9 }, function (error) {
-          if (error) console.error(error)
+          if (error) {
+            console.error(error);
+            setErrorMessage(error.message);
+            canvas.style.display = 'none';
+          }
         })
 
       }
       else {
 
-        const context = canvas.getContext('2d');
-        context.clearRect(0, 0, canvas.width, canvas.height);
+        setErrorMessage(null);
+        canvas.style.display = 'none';
+
       }
 
     }
-  }, [data]);
+  }, [data, isValid]);
 
-  const a = (m) => {
-    setData(m);
+  const updateData = (newData) => {
+    setData(newData || '');
     if (window.history.pushState) {
-      var newurl = window.location.protocol + "//" + window.location.host + window.location.pathname + '?data=' + encodeURI(m);
+      let newurl = window.location.protocol + "//" + window.location.host + window.location.pathname;
+      if (newData) {
+        newurl += '?data=' + encodeURI(newData);
+      }
       window.history.replaceState({ path: newurl }, '', newurl);
     }
   }
@@ -42,11 +57,15 @@ function App() {
       <h1>QR Code Generator</h1>
       <header className="App-header">
         <canvas ref={myRef} />
-        <p>To save: right click &gt; Save Image As</p>
+        { !errorMessage && isValid && <p>To save: right click &gt; Save Image As</p> }
+        { errorMessage && <p className='errorMessage'>{errorMessage}</p> }
       </header>
       <div className="Entry">
-      <textarea placeholder='https://example.com (paste full url here)' onChange={(e) => { a(e.target.value); }}
+      <textarea placeholder={`(paste web address url here)\n\ne.g. https://example.com`} onChange={(e) => { updateData(e.target.value); }}
         value={data} />
+      </div>
+      <div className="Links">
+        <a href="https://github.com/navhaxs/qr-code-generator">source</a> | <a href="https://wificard.io/">wificard.io</a>
       </div>
     </div>
   );
